@@ -35,7 +35,7 @@ const routes = {
 };
 
 //task
-const clean = () => del(["build"]);
+const clean = () => del(["build", ".publish"]);
 
 const js = () =>
   gulp
@@ -79,7 +79,7 @@ const watch = () => {
   gulp.watch(routes.js.watch, js);
 };
 
-const deployGhPages = () => gulp.src("build").pipe(ghPages());
+const deployGhPages = () => gulp.src("build/**/*").pipe(ghPages());
 
 // build delete for preventing conflict
 const prepare = gulp.series([clean, image]);
@@ -90,5 +90,11 @@ const assets = gulp.series([pug, styles, js]);
 // execute webserver deamon
 const postDev = gulp.parallel([webserver, watch]);
 
-// package.json에서 script로 사용하기 위해 export
-export const dev = gulp.series([prepare, assets, postDev]);
+// for build
+export const build = gulp.series([prepare, assets]);
+
+// for dev(webserver)
+export const dev = gulp.series([build, postDev]);
+
+// for deploy
+export const deploy = gulp.series([build, deployGhPages]);
